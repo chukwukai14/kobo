@@ -33,7 +33,11 @@ impl Scanner {
     self.scan_token();
 }
 
-let eof_line = self.line;
+let eof_line = self
+    .tokens
+    .last()
+    .map(|token| token.line)
+    .unwrap_or(1);
     
 
 self.tokens.push(Token {
@@ -149,7 +153,17 @@ self.add(TokenType::Number);
     fn identifier(&mut self) {
         // TODO(you): scan an identifier, then decide whether it is a keyword; keyword() in
         //            token.rs does the lookup (1.2, 1.3).
-        todo!("identifier")
+        while self.peek().is_ascii_alphanumeric() || self.peek() == '_' {
+    self.advance();
+}
+
+let text: String = self.src[self.start..self.current]
+    .iter()
+    .collect();
+
+let kind = keyword(&text).unwrap_or(TokenType::Identifier);
+
+self.add(kind);
     }
 
     // --- primitives ---------------------------------------------------------------
