@@ -28,22 +28,15 @@ impl Scanner {
     fn run(&mut self) {
         // TODO(you): drive the scan: read one token at a time until the source runs out, then
         //            add the EOF token. Spec 6.1 says which line EOF carries.
-        while !self.at_end() {
+       while !self.at_end() {
     self.start = self.current;
     self.scan_token();
 }
 
-let eof_line = self
-    .tokens
-    .last()
-    .map(|token| token.line)
-    .unwrap_or(1);
-    
-
 self.tokens.push(Token {
     kind: TokenType::Eof,
     lexeme: String::new(),
-    line: eof_line,
+    line: self.line,
 });
     }
 
@@ -129,7 +122,23 @@ match c {
     fn string(&mut self) {
         // TODO(you): scan a string literal. A string may span lines (1.5); an unterminated one
         //            is reported at the line it opened on (5.1).
-        todo!("string")
+        let start_line = self.line;
+
+while self.peek() != '"' && !self.at_end() {
+    if self.peek() == '\n' {
+        self.line += 1;
+    }
+
+    self.advance();
+}
+
+if self.at_end() {
+    self.error(start_line, "String is never closed.");
+    return;
+}
+
+self.advance();
+self.add(TokenType::Str);
     }
 
     fn number(&mut self) {
